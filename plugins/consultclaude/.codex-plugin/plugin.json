@@ -1,0 +1,40 @@
+{
+  "name": "consultclaude",
+  "version": "0.1.0",
+  "description": "Consult local Claude Code from Codex for creative, design, UX, architecture, and reasoning second opinions.",
+  "author": {
+    "name": "Azhika",
+    "email": "azhika2512@gmail.com",
+    "url": "https://github.com/Retro2512"
+  },
+  "homepage": "https://github.com/Retro2512/ConsultClaude#readme",
+  "repository": "https://github.com/Retro2512/ConsultClaude",
+  "license": "MIT",
+  "keywords": [
+    "claude",
+    "mcp",
+    "design",
+    "reasoning",
+    "consultation"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ConsultClaude",
+    "shortDescription": "Consult Claude from Codex.",
+    "longDescription": "Adds a local bridge that lets Codex ask Claude Code for advisory second opinions on design, creative direction, layouts, architecture, logic, copy, and review decisions while Codex remains responsible for edits and verification.",
+    "developerName": "Azhika",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "MCP",
+      "Local CLI"
+    ],
+    "websiteURL": "https://github.com/Retro2512/ConsultClaude",
+    "defaultPrompt": [
+      "Ask Claude to critique this layout.",
+      "Get Claude's architecture second opinion.",
+      "Have Claude stress-test this plan."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}

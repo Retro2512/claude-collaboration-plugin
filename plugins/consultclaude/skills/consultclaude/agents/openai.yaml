@@ -1,0 +1,7 @@
+interface:
+  display_name: "ConsultClaude"
+  short_description: "Consult Claude for design and reasoning"
+  default_prompt: "Use $consultclaude to get a Claude second opinion on this layout."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "consultclaude": {
+      "command": "python",
+      "args": [
+        "./scripts/consultclaude_mcp.py"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}

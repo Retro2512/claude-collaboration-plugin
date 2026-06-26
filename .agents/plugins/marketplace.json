@@ -1,0 +1,20 @@
+{
+  "name": "consultclaude",
+  "interface": {
+    "displayName": "ConsultClaude"
+  },
+  "plugins": [
+    {
+      "name": "consultclaude",
+      "source": {
+        "source": "local",
+        "path": "./plugins/consultclaude"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
