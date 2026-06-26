@@ -1,0 +1,41 @@
+<svg viewBox="0 0 1200 320" width="1200" height="320" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif">
+  <!-- card -->
+  <rect x="2" y="2" width="1196" height="316" rx="22" fill="#F4EFE6" stroke="#E4DACB" stroke-width="2"/>
+
+  <!-- decorative oversized quote mark -->
+  <text x="1040" y="320" font-size="420" font-weight="700" fill="#C8603C" opacity="0.12">”</text>
+
+  <!-- kicker -->
+  <text x="92" y="82" font-size="15" letter-spacing="3" font-weight="600" fill="#8A8275">CODEX PLUGIN · CLAUDE AS THE CREATIVE ADVISOR</text>
+
+  <!-- wordmark -->
+  <text x="88" y="164" font-size="78" font-weight="700" letter-spacing="-1">
+    <tspan fill="#20201E">Consult</tspan><tspan fill="#C8603C">Claude</tspan>
+  </text>
+
+  <!-- tagline -->
+  <text x="92" y="206" font-size="27" fill="#5E574D">Codex builds. Claude advises.</text>
+
+  <!-- relationship strip -->
+  <g transform="translate(92,240)">
+    <!-- Codex -->
+    <rect x="0" y="0" width="120" height="42" rx="21" fill="none" stroke="#20201E" stroke-width="2"/>
+    <text x="60" y="27" font-size="18" font-weight="600" fill="#20201E" text-anchor="middle">Codex</text>
+    <text x="60" y="62" font-size="13" fill="#8A8275" text-anchor="middle">the engineer</text>
+
+    <!-- asks -> -->
+    <path d="M134 15 H240" stroke="#A9A093" stroke-width="2" fill="none"/>
+    <path d="M240 15 l-9 -5 v10 z" fill="#A9A093"/>
+    <text x="187" y="7" font-size="12" fill="#A9938A" text-anchor="middle">asks</text>
+
+    <!-- <- advises -->
+    <path d="M240 30 H134" stroke="#C8A48F" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+    <path d="M134 30 l9 -5 v10 z" fill="#C8A48F"/>
+    <text x="187" y="47" font-size="12" fill="#A9938A" text-anchor="middle">advises</text>
+
+    <!-- Claude -->
+    <rect x="250" y="0" width="120" height="42" rx="21" fill="#C8603C"/>
+    <text x="310" y="27" font-size="18" font-weight="600" fill="#FFFFFF" text-anchor="middle">Claude</text>
+    <text x="310" y="62" font-size="13" fill="#8A8275" text-anchor="middle">the advisor</text>
+  </g>
+</svg>

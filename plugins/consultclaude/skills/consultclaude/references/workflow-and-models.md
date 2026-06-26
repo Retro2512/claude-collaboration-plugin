@@ -7,7 +7,7 @@
 3. Pick mode and model. Use a mode preset unless the user names a model.
 4. Ask for a bounded output: options, critique, risks, recommendation, or validation checklist.
 5. Synthesize Claude's response. Codex keeps ownership of implementation, tests, and final answer.
-6. Record durable conclusions in the task `progress.md` when the project uses one.
+6. Record durable conclusions only in the project's existing planning notes when they affect implementation decisions.
 
 ## Mode Presets
 

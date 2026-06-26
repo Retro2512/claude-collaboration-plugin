@@ -19,7 +19,7 @@ For model selection details and prompt patterns, read `references/workflow-and-m
 4. Pick the model only when needed. Use mode defaults for routine work; use `opus` for deep judgment; use `sonnet` for fast or cost-sensitive review; pass any user-requested Claude model alias or full ID.
 5. Ask Claude for a bounded response: recommendation, reasoning, alternatives, risks, and next checks.
 6. Compare Claude's answer against the codebase and user request. Codex makes final decisions, edits files, runs tests, and explains the outcome.
-7. If the project has a task `progress.md`, save durable Claude findings there when they affect the roadmap.
+7. Save durable Claude findings only in the project's existing planning notes when they affect implementation decisions.
 
 ## Preferred Tool Path
 
@@ -42,7 +42,7 @@ Typical MCP arguments:
 Keep `allow_tools` as `none` unless Claude must inspect files directly. If inspection is necessary, use `read-only`; Codex still performs all edits.
 
 Use `auth_provider` only when the user or environment explicitly needs a non-default Claude Code route:
-`default`, `bedrock`, `vertex`, `foundry`, or `anthropic-aws`. Secret credentials should remain in environment variables or Claude Code settings, not in prompts or MCP arguments.
+`default`, `bedrock`, `vertex`, `foundry`, or `anthropic-aws`. The aliases `claude` and `anthropic` are accepted and resolve to `default`. Secret credentials should remain in environment variables or Claude Code settings, not in prompts or MCP arguments.
 
 Use `consultclaude_doctor` before depending on Claude in a new environment. Set `live=true` only when a small real Claude request is acceptable.
 
@@ -89,5 +89,6 @@ This writes a prompt under `.codex/claude-handoffs/` for manual use. Do not wait
 ## Resources
 
 - `../../scripts/consultclaude_cli.py`: CLI wrapper for Claude consultations.
-- `../../scripts/consultclaude_mcp.py`: dependency-free stdio MCP server exposing `consult_claude` and `consultclaude_presets`.
+- `../../scripts/consultclaude_mcp.py`: dependency-free stdio MCP server exposing `consult_claude`, `consultclaude_presets`, and `consultclaude_doctor`.
+- `agents/openai.yaml`: Codex agent prompt wiring for ConsultClaude.
 - `references/workflow-and-models.md`: mode presets, model heuristics, context hygiene, and prompt examples.

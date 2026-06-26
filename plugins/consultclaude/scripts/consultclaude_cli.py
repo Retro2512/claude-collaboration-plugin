@@ -922,10 +922,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.doctor or args.doctor_live:
         result = run_doctor(live=args.doctor_live, cwd=args.cwd, auth_provider=args.auth_provider)
-        if args.output == "json":
-            print(json.dumps(result, indent=2))
-        else:
-            print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))
         return 0 if result.get("ok") else 1
 
     try:
