@@ -1,6 +1,6 @@
 {
   "name": "consultclaude",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Consult local Claude Code from Codex for creative, design, UX, architecture, and reasoning second opinions.",
   "author": {
     "name": "Azhika",
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "ConsultClaude",
     "shortDescription": "Consult Claude from Codex.",
-    "longDescription": "Adds a local bridge that lets Codex ask Claude Code for advisory second opinions on design, creative direction, layouts, architecture, logic, copy, and review decisions while Codex remains responsible for edits and verification.",
+    "longDescription": "Adds a local bridge that lets Codex ask Claude Code for advisory second opinions on design, creative direction, layouts, architecture, logic, copy, and review decisions while Codex remains responsible for edits and verification. Includes doctor diagnostics, provider routing options, and redaction safeguards for public use.",
     "developerName": "Azhika",
     "category": "Productivity",
     "capabilities": [

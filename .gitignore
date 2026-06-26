@@ -9,6 +9,7 @@ __pycache__/
 venv/
 
 # Local Codex and Claude handoffs/transcripts
+.claude/
 .codex/claude-handoffs/
 .codex/claude-transcripts/
 

@@ -13,11 +13,11 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from consultclaude_cli import ConsultRequest, list_model_presets, run_consultation  # noqa: E402
+from consultclaude_cli import ConsultRequest, list_model_presets, run_consultation, run_doctor  # noqa: E402
 
 
 SERVER_NAME = "consultclaude"
-SERVER_VERSION = "0.1.0"
+SERVER_VERSION = "0.2.0"
 
 
 def log(message: str) -> None:
@@ -85,9 +85,34 @@ def consultation_tool_schema() -> dict[str, Any]:
                 "type": "string",
                 "description": "Working directory for resolving context files and running Claude.",
             },
+            "auth_provider": {
+                "type": "string",
+                "enum": ["default", "claude", "anthropic", "bedrock", "vertex", "foundry", "anthropic-aws"],
+                "description": "Claude Code auth/provider route. Default uses Claude Code's normal auth resolution.",
+            },
+            "provider_region": {
+                "type": "string",
+                "description": "Provider region for Bedrock, Vertex, or Anthropic AWS.",
+            },
+            "provider_project": {
+                "type": "string",
+                "description": "Vertex AI project ID.",
+            },
+            "provider_base_url": {
+                "type": "string",
+                "description": "Provider or gateway base URL override.",
+            },
+            "provider_resource": {
+                "type": "string",
+                "description": "Foundry resource name.",
+            },
+            "provider_workspace_id": {
+                "type": "string",
+                "description": "Anthropic AWS workspace ID.",
+            },
             "allow_tools": {
                 "type": "string",
-                "enum": ["none", "read-only", "default"],
+                "enum": ["none", "read-only"],
                 "description": "Default none keeps Claude advisory-only.",
             },
             "add_dirs": {
@@ -152,6 +177,28 @@ def tools_list() -> dict[str, Any]:
                 "description": "Return supported mode presets and model-selection guidance for Claude consultations.",
                 "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
             },
+            {
+                "name": "consultclaude_doctor",
+                "description": "Check Claude CLI discovery and optionally run a live auth/provider smoke test.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "live": {
+                            "type": "boolean",
+                            "description": "Run a live Claude smoke test to verify auth, quota, and provider routing.",
+                        },
+                        "cwd": {
+                            "type": "string",
+                            "description": "Working directory for the doctor check.",
+                        },
+                        "auth_provider": {
+                            "type": "string",
+                            "enum": ["default", "claude", "anthropic", "bedrock", "vertex", "foundry", "anthropic-aws"],
+                        },
+                    },
+                    "additionalProperties": False,
+                },
+            },
         ]
     }
 
@@ -165,6 +212,17 @@ def call_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
                     "text": json.dumps(list_model_presets(), indent=2),
                 }
             ]
+        }
+
+    if name == "consultclaude_doctor":
+        result = run_doctor(
+            live=bool(arguments.get("live", False)),
+            cwd=arguments.get("cwd"),
+            auth_provider=arguments.get("auth_provider"),
+        )
+        return {
+            "content": [{"type": "text", "text": json.dumps(result, indent=2)}],
+            "isError": not bool(result.get("ok")),
         }
 
     if name != "consult_claude":

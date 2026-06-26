@@ -10,6 +10,7 @@ import py_compile
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -199,8 +200,12 @@ def validate_mcp_smoke() -> None:
     tools_response = module.handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
     tools = tools_response.get("result", {}).get("tools", [])
     names = {tool.get("name") for tool in tools}
-    if {"consult_claude", "consultclaude_presets"} - names:
+    if {"consult_claude", "consultclaude_presets", "consultclaude_doctor"} - names:
         fail("MCP tools/list is missing expected tools.")
+    consult_schema = next(tool["inputSchema"] for tool in tools if tool.get("name") == "consult_claude")
+    allow_enum = consult_schema["properties"]["allow_tools"]["enum"]
+    if "default" in allow_enum:
+        fail("MCP consult_claude schema must not expose allow_tools=default.")
 
     models_response = module.handle_request(
         {
@@ -213,6 +218,117 @@ def validate_mcp_smoke() -> None:
     if "preset_modes" not in models_response.get("result", {}).get("content", [{}])[0].get("text", ""):
         fail("MCP consultclaude_presets tool did not return model presets.")
 
+    os.environ["CONSULTCLAUDE_CLAUDE_PATH"] = sys.executable
+    dry_response = module.handle_request(
+        {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+                "name": "consult_claude",
+                "arguments": {
+                    "prompt": "MCP dry run",
+                    "dry_run": True,
+                    "cwd": str(REPO_ROOT),
+                    "auth_provider": "bedrock",
+                    "provider_region": "us-east-1",
+                },
+            },
+        }
+    )
+    dry_text = dry_response.get("result", {}).get("content", [{}])[0].get("text", "")
+    if "CLAUDE_CODE_USE_BEDROCK" not in dry_text or '"auth_provider": "bedrock"' not in dry_text:
+        fail("MCP consult_claude dry-run path did not include provider metadata.")
+
+    doctor_response = module.handle_request(
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "tools/call",
+            "params": {"name": "consultclaude_doctor", "arguments": {"live": False, "cwd": str(REPO_ROOT)}},
+        }
+    )
+    doctor_text = doctor_response.get("result", {}).get("content", [{}])[0].get("text", "")
+    if "claude_candidates" not in doctor_text or "provider_summary" not in doctor_text:
+        fail("MCP consultclaude_doctor did not return expected diagnostics.")
+    os.environ.pop("CONSULTCLAUDE_CLAUDE_PATH", None)
+
+
+def validate_runtime_security() -> None:
+    cli_path = REPO_ROOT / f"plugins/{PLUGIN_NAME}/scripts/consultclaude_cli.py"
+    spec = importlib.util.spec_from_file_location("consultclaude_cli", cli_path)
+    if spec is None or spec.loader is None:
+        fail("Could not import CLI module.")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    fake_openai_key = "sk-" + "testSECRET1234567890"
+    fake_aws_key = "AKIA" + "ABCDEFGHIJKLMNOP"
+    fake_github_token = "ghp_" + "abcdefghijklmnopqrstuvwxyz123456"
+    fake_bearer = "abcdefghijklmnopqrstuvwx"
+    fake_slack_token = "xoxb-" + "123456789012-" + "abcdefghijklmnopqrstuvwxyz"
+    secret_prompt = f"Review token {fake_openai_key} and AWS {fake_aws_key}."
+    request = module.ConsultRequest(prompt=secret_prompt, context=f"github token {fake_github_token}")
+    gathered_context = module.gather_context(request, REPO_ROOT)
+    prompt_text = module.build_consultation_prompt(request, gathered_context)
+    forbidden = [fake_openai_key, fake_aws_key, fake_github_token]
+    if any(item in prompt_text for item in forbidden):
+        fail("Redaction failed for prompt or context secrets.")
+
+    redacted = module.redact_text(
+        """
+        token=plainsecret
+        Authorization: Bearer {fake_bearer}
+        {fake_slack_token}
+        postgresql://user:password@example.com/db
+        -----BEGIN PRIVATE KEY-----
+        abc
+        -----END PRIVATE KEY-----
+        """.format(fake_bearer=fake_bearer, fake_slack_token=fake_slack_token)
+    )
+    for leaked in ["plainsecret", fake_bearer, "xoxb-", "password@example.com", "BEGIN PRIVATE KEY"]:
+        if leaked in redacted:
+            fail(f"Redaction missed secret pattern: {leaked}")
+
+    provider_request = module.ConsultRequest(
+        prompt="provider test",
+        auth_provider="vertex",
+        provider_project="demo-project",
+        provider_region="us-central1",
+    )
+    provider_env = module.build_claude_environment(provider_request)
+    if provider_env.get("CLAUDE_CODE_USE_VERTEX") != "1":
+        fail("Vertex provider did not set CLAUDE_CODE_USE_VERTEX.")
+    if provider_env.get("ANTHROPIC_VERTEX_PROJECT_ID") != "demo-project":
+        fail("Vertex provider did not set project ID.")
+
+    try:
+        module.ConsultRequest(prompt="bad", allow_tools="default")
+        module.build_claude_command(module.ConsultRequest(prompt="bad", allow_tools="default"), REPO_ROOT)
+        fail("allow_tools=default should be rejected.")
+    except ValueError:
+        pass
+
+    with tempfile.TemporaryDirectory() as transcript_dir:
+        os.environ["CONSULTCLAUDE_CLAUDE_PATH"] = sys.executable
+        result = module.run_consultation(
+            module.ConsultRequest(
+                prompt=secret_prompt,
+                cwd=str(REPO_ROOT),
+                save_transcript=transcript_dir,
+                timeout_seconds=30,
+            )
+        )
+        if result.get("ok"):
+            fail("Expected fake Claude command to fail.")
+        transcript_files = list(Path(transcript_dir).glob("*.json"))
+        if len(transcript_files) != 1:
+            fail("Expected one saved transcript.")
+        transcript_text = transcript_files[0].read_text(encoding="utf-8")
+        if any(item in transcript_text for item in forbidden):
+            fail("Transcript persisted unredacted secrets.")
+        os.environ.pop("CONSULTCLAUDE_CLAUDE_PATH", None)
+
 
 def main() -> int:
     validate_required_files()
@@ -221,6 +337,7 @@ def main() -> int:
     validate_mcp_config()
     validate_python()
     validate_mcp_smoke()
+    validate_runtime_security()
     print("Public release validation passed.")
     return 0
 

@@ -26,6 +26,34 @@
 
 Pass `model` explicitly for full control. The bridge accepts Claude CLI aliases such as `sonnet`, `opus`, and `fable`, plus full model IDs supported by the installed Claude CLI. Prefer aliases for durability unless the user explicitly asks for a specific full model.
 
+## Auth Provider Routing
+
+Default mode uses Claude Code's normal authentication precedence. That is the right choice for most users because it lets Claude Code decide between subscription login, OAuth token, Console/API credentials, or an already configured provider.
+
+When a user explicitly needs a provider route, set `auth_provider`:
+
+| Provider | Effect |
+| --- | --- |
+| `default` | Leave provider routing to Claude Code. |
+| `bedrock` | Set `CLAUDE_CODE_USE_BEDROCK=1`; optionally pass `provider_region`. |
+| `vertex` | Set `CLAUDE_CODE_USE_VERTEX=1`; optionally pass `provider_project` and `provider_region`. |
+| `foundry` | Set `CLAUDE_CODE_USE_FOUNDRY=1`; optionally pass `provider_resource` or `provider_base_url`. |
+| `anthropic-aws` | Set `CLAUDE_CODE_USE_ANTHROPIC_AWS=1`; pass `provider_workspace_id` and region when needed. |
+
+Keep secrets in environment variables or Claude Code settings. Do not place API keys in prompts, context, MCP arguments, or transcripts.
+
+Run doctor before relying on a new environment:
+
+```bash
+python scripts/consultclaude_cli.py --doctor --output json
+```
+
+Run live doctor only when a small real Claude request is acceptable:
+
+```bash
+python scripts/consultclaude_cli.py --doctor-live --output json
+```
+
 ## Model Choice Heuristics
 
 - Use `sonnet` for routine coordination, review, copy cleanup, and cost-sensitive questions.
@@ -41,6 +69,7 @@ Pass `model` explicitly for full control. The bridge accepts Claude CLI aliases 
 - Avoid screenshots unless the bridge is extended to support image input. For screenshots, describe the visible layout or use a separate visual-analysis-capable workflow.
 - Keep Claude advisory by default with `allow_tools=none`. Use `read-only` only when Claude truly needs to inspect files directly.
 - Never grant edit or shell access from this bridge for ordinary consultations. Codex should perform edits and verification.
+- `allow_tools=default` is intentionally unsupported because it is ambiguous and can expand Claude's available tools.
 
 ## Claude App Fallback
 

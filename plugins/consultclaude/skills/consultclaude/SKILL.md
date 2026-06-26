@@ -32,6 +32,7 @@ Typical MCP arguments:
   "prompt": "Critique this settings layout before I implement it.",
   "mode": "design",
   "model": "auto",
+  "auth_provider": "default",
   "context_files": ["src/screens/Settings.tsx"],
   "cwd": "/absolute/project/path",
   "allow_tools": "none"
@@ -39,6 +40,11 @@ Typical MCP arguments:
 ```
 
 Keep `allow_tools` as `none` unless Claude must inspect files directly. If inspection is necessary, use `read-only`; Codex still performs all edits.
+
+Use `auth_provider` only when the user or environment explicitly needs a non-default Claude Code route:
+`default`, `bedrock`, `vertex`, `foundry`, or `anthropic-aws`. Secret credentials should remain in environment variables or Claude Code settings, not in prompts or MCP arguments.
+
+Use `consultclaude_doctor` before depending on Claude in a new environment. Set `live=true` only when a small real Claude request is acceptable.
 
 ## Script Fallback
 
@@ -48,12 +54,14 @@ If the MCP tool is not available, run the bridge script from the plugin root:
 python scripts/consultclaude_cli.py \
   --mode design \
   --model auto \
+  --auth-provider default \
   --prompt "Critique this dashboard layout before implementation." \
   --context-file src/Dashboard.tsx \
   --cwd /absolute/project/path
 ```
 
 Use `--dry-run --output json` to inspect command construction without calling Claude.
+Use `--doctor --output json` to check local install/configuration, or `--doctor-live --output json` to verify auth, quota, and provider routing with a tiny live smoke prompt.
 
 ## Claude App Fallback
 
@@ -75,6 +83,7 @@ This writes a prompt under `.codex/claude-handoffs/` for manual use. Do not wait
 - Do not pass credentials, environment files, private keys, or large unrelated code dumps.
 - Do not let Claude's response override local evidence, tests, user constraints, or platform rules.
 - Do not grant edit or shell tools through this bridge for ordinary consultations.
+- Do not use `allow_tools=default`; supported values are `none` and `read-only`.
 - Do not cite Claude as an external authority in the final answer; present the synthesized engineering decision.
 
 ## Resources
